@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tarefa Pontuada - REST API</title>
+    <script src="static/js/jquery.min.js"></script>
+    <link rel="stylesheet" href= "static/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="static/css/bootstrap-toggle.min.css" rel="stylesheet"/>
+  
+
+        <script src="static/js/bootstrap-toggle.min.js">
+        </script>
+      <script type="text/javascript">
+  
+           
+          function isBoolean(val){
+            return val==true || val==false
+          }
+
+          $(document).ready(function() {
+            $('#mensagem-sucesso').hide();
+            $('#mensagem-erro').hide();
+            $('#navbarDarkDropdownMenuLink-acionar-desativar').focusin(function(){
+                  $('.dropdown-menu').toggle();
+            });
+
+            
+            $("#dropdown-pinos-acionar-desativar a").click(function(e){
+                $('.dropdown-menu').slideUp("fast");
+                $.ajax({
+                        method: 'PUT',
+                        url: '/altera/'+$(this).attr('id')+'/',
+                        success: function (data) {  
+                          $('#mensagem-sucesso').html(data.status);
+                          $('#mensagem-sucesso').show();
+                          $('#mensagem-sucesso').delay(3000).hide(300);
+              
+                        },    
+                        error: function (data) {  
+                          $('#mensagem-erro').html('Erro na operação: pino inexistente');
+                          $('#mensagem-erro').show();
+                          $('#mensagem-erro').delay(3000).hide(300);
+                        
+                        }    
+                      });     
+            });        
+              
+            $('#btn-refresh-pinos').click(function() {
+                $.getJSON('/pino/status/', function (data) {
+                  $.each(data, function( key, val) {
+                    if (isBoolean(val)){
+                      var situacao=(val)? "Habilitado" : "Desabilitado";
+                      $("#pino-"+key+"-status").html(situacao)
+
+                    };
+                  });
+                });
+            });
+
+            $('.form-select').change(function(){
+                
+                if(!isNaN($('.form-select option:selected').val())){
+                  $.get('/pino/liga/'+$('.form-select option:selected').val()+'/', function(data){
+                    if(data.status=="ativado"){
+                      $('#mensagem-sucesso').html('Ativado com sucesso');
+                      $('#mensagem-sucesso').show();
+                      $('#mensagem-sucesso').delay(3000).hide(300);
+                    }else{
+                      $('#mensagem-erro').html('Pino inexistente ou desativado');
+                      $('#mensagem-erro').show();
+                      $('#mensagem-erro').delay(3000).hide(300);
+                    }
+                  });
+                }
+                $('.form-select').prop('selectedIndex', 0);
+            });
+
+               /** $('input[type=checkbox]').change(function() {
+                    $.ajax({
+                        method: 'PUT',
+                        url: 'http://localhost:5000/altera/',
+                        error: function (xhr, textStatus, errorThrown) {  
+                         console.log('Error in Operation');  
+                        }    
+                    });     
+
+                });
+
+                $('button[btn-status]').click(function() {
+                    $.getJSON('http://localhost:5000/led/status/', function (data, textStatus, jqXHR) {
+				            $('#resultado').html('Status do LED: '+data.status);
+			        });
+
+
+                });*/
+
+
+          });
+
+      </script>
+</head>
+<body>
+    <h1>Acionado um LED via HTML</h1>
+
+    <div class="container mt-5">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="#">Escolha uma pino para acionar/desativar</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDarkDropdown" aria-controls="navbarNavDarkDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarNavDarkDropdown">
+                <ul class="navbar-nav">
+                  <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDarkDropdownMenuLink-acionar-desativar" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      Pinos
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark" id="dropdown-pinos-acionar-desativar" aria-labelledby="navbarDarkDropdownMenuLink">
+                      <li><a class="dropdown-item" href="#" id="16">Pino 16</a></li> 
+                      <li><a class="dropdown-item" href="#" id="17">Pino 17</a></li>
+                      <li><a class="dropdown-item" href="#" id="22">Pino 22</a></li>
+                      <li><a class="dropdown-item" href="#" id="23">Pino 23</a></li>
+                      <li><a class="dropdown-item" href="#" id="24">Pino 24</a></li>
+                      <li><a class="dropdown-item" href="#" id="25">Pino 25</a></li>
+                    </ul>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </nav>
+    </div>
+    
+    <div class="container mt-5">
+      <label for="pino-ativar" class="form-label">Escolha um dispositivo para ativar</label>
+      <select class="form-select" aria-label="Default select example">
+          <option selected>Escolha</option>
+          <option value="16">Ligado ao Pino 16</option>
+          <option value="17">Ligado ao Pino 17</option>
+          <option value="22">Ligado ao Pino 22</option>
+          <option value="23">Ligado ao Pino 23</option>
+          <option value="24">Ligado ao Pino 24</option>
+          <option value="25">Ligado ao Pino 25</option> 
+      </select>
+    </div>
+    <!--O resultado da procura será renderizado nesta div -->
+    <div class="container mt-5">
+      <table class="table" id="situacao-pinos">
+        <thead>
+          <tr>
+            <th scope="col">Pino</th>
+            <th scope="col">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">16</th>
+            <td id="pino-16-status">Desabilitado</td>
+          </tr>
+
+          <tr>
+            <th scope="row">17</th>
+            <td id="pino-17-status">Desabilitado</td>
+          </tr>
+
+          <tr>
+            <th scope="row">22</th>
+            <td id="pino-22-status">Desabilitado</td>
+          </tr>
+
+          <tr>
+            <th scope="row">23</th>
+            <td id="pino-23-status">Desabilitado</td>
+          </tr>
+
+          <tr>
+            <th scope="row">24</th>
+            <td id="pino-24-status">Desabilitado</td>
+          </tr>
+
+          <tr>
+            <th scope="row">25</th>
+            <td id="pino-25-status">Desabilitado</td>
+          </tr>
+
+         
+
+        </tbody>
+      </table>
+      <button type="button" class="btn btn-info" name="btn-refresh-pinos" id="btn-refresh-pinos">Atualizar</button>
+    </div>
+    <div id="mensagem-erro" class="alert alert-danger container mt-5" role="alert">
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+  <div id="mensagem-sucesso" class="alert alert-success container mt-5" role="alert">
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+  </div>
+
+</body>
+</html>
